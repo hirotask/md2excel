@@ -6,7 +6,8 @@ authors = [
     {name = "Your Name", email = "your.email@example.com"}
 ]
 dependencies = [
-    "spire-xls>=2.0.0"
+    "spire-xls>=2.0.0",
+    "mermaid-cli>=0.1.0"
 ]
 requires-python = ">=3.8,<3.15"
 

@@ -27,7 +27,7 @@ class MarkdownParser:
 
     def parse_content(self, content: str) -> List[Dict]:
         """
-        Parse Markdown content and extract tables and text grouped by sheets.
+        Parse Markdown content and extract tables, text, and code blocks grouped by sheets.
 
         Args:
             content: Markdown content as string
@@ -42,6 +42,9 @@ class MarkdownParser:
         in_table = False
         table_lines = []
         text_buffer = []
+        in_code_block = False
+        code_block_lines = []
+        code_block_language = None
 
         def save_text_buffer():
             """Save accumulated text lines as a text item."""
@@ -55,7 +58,43 @@ class MarkdownParser:
                     })
                 text_buffer.clear()
 
+        def save_code_block():
+            """Save accumulated code block as a mermaid item."""
+            if code_block_lines and current_sheet is not None and code_block_language == 'mermaid':
+                code_content = '\n'.join(code_block_lines).strip()
+                if code_content:
+                    current_sheet['items'].append({
+                        'type': 'mermaid',
+                        'content': code_content,
+                        'language': 'mermaid'
+                    })
+                code_block_lines.clear()
+
         for line in lines:
+            # Check for code block delimiter (```)
+            if line.strip().startswith('```'):
+                if not in_code_block:
+                    # Starting a code block
+                    # Save text buffer before code block
+                    save_text_buffer()
+
+                    # Extract language identifier
+                    language = line.strip()[3:].strip()
+                    code_block_language = language if language else None
+                    in_code_block = True
+                    code_block_lines = []
+                else:
+                    # Ending a code block
+                    in_code_block = False
+                    save_code_block()
+                    code_block_language = None
+                continue
+
+            # If inside code block, accumulate lines
+            if in_code_block:
+                code_block_lines.append(line)
+                continue
+
             # Check for H1 (# ) - new sheet
             if line.startswith('# ') and not line.startswith('## '):
                 # Save previous text buffer
@@ -136,6 +175,10 @@ class MarkdownParser:
             if table_data and current_sheet is not None:
                 table_data['type'] = 'table'
                 current_sheet['items'].append(table_data)
+
+        # Save final code block if exists
+        if in_code_block and code_block_lines:
+            save_code_block()
 
         return sheets
 

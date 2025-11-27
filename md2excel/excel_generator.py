@@ -1,8 +1,13 @@
 """Excel generator using Spire.XLS for creating Excel files."""
 
+import os
+import tempfile
+import logging
 from typing import List, Dict
 from spire.xls import Workbook, Worksheet, CellRange, HorizontalAlignType, VerticalAlignType
 from spire.xls import ExcelVersion, LineStyleType, BordersLineType, Color
+
+logger = logging.getLogger(__name__)
 
 
 class ExcelGenerator:
@@ -10,7 +15,18 @@ class ExcelGenerator:
 
     def __init__(self):
         """Initialize Excel generator."""
-        pass
+        self.mermaid_renderer = None
+        self._init_mermaid_renderer()
+
+    def _init_mermaid_renderer(self):
+        """Initialize Mermaid renderer if available."""
+        try:
+            from .mermaid_renderer import MermaidRenderer
+            self.mermaid_renderer = MermaidRenderer()
+            logger.info("Mermaid renderer initialized successfully")
+        except ImportError as e:
+            logger.warning(f"Mermaid renderer not available: {e}")
+            logger.warning("Mermaid diagrams will be skipped. Install with: pip install mermaid-cli && playwright install chromium")
 
     def generate_excel(self, sheets: List[Dict], output_path: str):
         """
@@ -81,6 +97,61 @@ class ExcelGenerator:
                 cell.Style.WrapText = False
 
                 current_row += 1
+
+            elif item_type == 'mermaid':
+                # Render Mermaid diagram and insert as image
+                if self.mermaid_renderer is not None:
+                    try:
+                        # Create temporary file for the PNG
+                        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+                            tmp_path = tmp_file.name
+
+                        # Render Mermaid diagram to PNG
+                        mermaid_code = item.get('content', '')
+                        success = self.mermaid_renderer.render_to_file(mermaid_code, tmp_path)
+
+                        if success and os.path.exists(tmp_path):
+                            # Add picture to worksheet
+                            picture = worksheet.Pictures.Add(tmp_path)
+
+                            # Position the picture at current row
+                            picture.TopRow = current_row
+                            picture.LeftColumn = 1
+
+                            # Set picture size (width in pixels, adjust as needed)
+                            # Default size based on content, or set fixed width
+                            picture.Width = 600  # pixels
+
+                            # Calculate rows occupied (rough estimate: 20 pixels per row)
+                            rows_occupied = max(1, int(picture.Height / 20))
+                            current_row += rows_occupied + 1  # Add 1 for spacing
+
+                            logger.info(f"Successfully inserted Mermaid diagram at row {current_row - rows_occupied - 1}")
+
+                            # Clean up temporary file
+                            os.unlink(tmp_path)
+                        else:
+                            # Rendering failed, add error message
+                            cell = worksheet.Range[current_row, 1]
+                            cell.Text = "[Mermaid diagram rendering failed]"
+                            cell.Style.Font.Color = Color.get_Red()
+                            current_row += 1
+                            logger.error("Failed to render Mermaid diagram")
+
+                    except Exception as e:
+                        # Error during rendering, add error message
+                        cell = worksheet.Range[current_row, 1]
+                        cell.Text = f"[Mermaid diagram error: {str(e)}]"
+                        cell.Style.Font.Color = Color.get_Red()
+                        current_row += 1
+                        logger.error(f"Error inserting Mermaid diagram: {e}")
+                else:
+                    # Mermaid renderer not available, add note
+                    cell = worksheet.Range[current_row, 1]
+                    cell.Text = "[Mermaid diagram - renderer not available]"
+                    cell.Style.Font.Color = Color.get_Orange()
+                    current_row += 1
+                    logger.warning("Mermaid renderer not available, skipping diagram")
 
             elif item_type == 'table':
                 # Add header row

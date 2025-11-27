@@ -20,6 +20,17 @@
 | Backend API | Bob | 1. Setup database 2. Create endpoints 3. Write tests |
 | Documentation | Charlie | Working on user guide |
 
+```mermaid
+flowchart TD
+  A[開始] --> B{判定}
+  B -->|Yes| C[処理A]
+  B -->|No| D[処理B]
+  C --> E[終了]
+  D --> E
+```
+
+こんな感じで、Mermaidのグラフも書けます。
+
 # Testing Plan
 
 これはテストプランです
