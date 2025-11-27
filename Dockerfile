@@ -1,5 +1,5 @@
 # Multi-stage build for md2excel with Mermaid support
-FROM python:3.12-slim as builder
+FROM python:3.12-slim AS builder
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
@@ -17,8 +17,10 @@ RUN uv pip install --system -e .
 # Final stage
 FROM python:3.12-slim
 
-# Install system dependencies for Playwright and Japanese fonts
+# Install system dependencies for Playwright, .NET (Spire.XLS), and Japanese fonts
 RUN apt-get update && apt-get install -y \
+    # .NET Core dependencies (required by Spire.XLS)
+    libicu-dev \
     # Playwright/Chromium dependencies
     libnspr4 \
     libnss3 \
