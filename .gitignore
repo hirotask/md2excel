@@ -35,10 +35,25 @@ env/
 
 # Output files
 *.xml
+*.xlsx
 !example*.xml
+!example*.xlsx
+test_*.xml
+test_*.xlsx
+
+# Temporary files
+*.tmp
+*.png.tmp
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Playwright cache
+.cache/
+ms-playwright/
+
+# Plan files
+.plan.md
 
 .local/

@@ -2,7 +2,7 @@
 
 Markdown形式のテキストをXLSX形式に変換するツールです。
 
-## 機能
+## 機能ハイライト
 
 - Markdown形式のテーブルをExcelで読み込める形式に変換
 - 見出し1（#）で新しいシートを作成
@@ -13,37 +13,51 @@ Markdown形式のテキストをXLSX形式に変換するツールです。
 - テーブルセルに罫線を自動適用
 - Mermaid図をPNG画像としてExcelに埋め込み（オプション機能）
 
-## インストール
+## Getting Started
 
-### 基本インストール
+### 方法1: Dockerを使用（推奨）
+
+すべての依存関係がプリインストール済みで、最も簡単に始められます。
+
+#### 1. Dockerイメージをビルド
+
+```bash
+docker build -t md2excel:latest .
+```
+
+#### 2. Markdownファイルを変換
+
+```bash
+# 基本的な使用方法
+docker run -v $(pwd):/data md2excel:latest input.md -o output.xlsx
+
+# サンプルファイルで試す
+docker run -v $(pwd):/data md2excel:latest test_sample.md
+
+# Mermaid図を含むファイル
+docker run -v $(pwd):/data md2excel:latest test_mermaid.md -o output.xlsx
+
+# ヘルプを表示
+docker run md2excel:latest --help
+```
+
+**Dockerの利点:**
+- ✅ 依存関係（Playwright、Chromium、日本語フォント）が全てプリインストール済み
+- ✅ システムに依存関係をインストール不要
+- ✅ どの環境でも同じように動作
+- ✅ クリーンな実行環境
+
+---
+
+### 方法2: ローカル環境にインストール
+
+#### 1. 基本インストール
 
 ```bash
 uv pip install -e .
 ```
 
-### Mermaid図サポート（オプション）
-
-Mermaid図をExcelに埋め込む機能を使用する場合は、追加のセットアップが必要です：
-
-```bash
-# システム依存関係のインストール（Linux/WSL）
-sudo apt-get install -y libnspr4 libnss3 libasound2t64
-
-# 日本語フォントのインストール（日本語テキストを含むMermaid図を使用する場合）
-sudo apt-get install -y fonts-noto-cjk fonts-noto-cjk-extra
-
-# Playwrightブラウザのインストール
-uv run python -m playwright install chromium
-
-# または、Playwrightのヘルパーを使用（全ての依存関係を一括インストール）
-sudo uv run python -m playwright install-deps
-```
-
-**注意：**
-- Mermaid機能を使用しない場合は、基本インストールのみで動作します
-- 依存関係が不足している場合、Mermaid図は警告メッセージに置き換えられます
-
-## 使用方法
+#### 2. Markdownファイルを変換
 
 ```bash
 # 基本的な使用方法
@@ -52,18 +66,33 @@ uv run md2excel input.md
 # Excel形式で出力
 uv run md2excel input.md -o output.xlsx
 
-```
-
-## サンプル
-
-```bash
 # サンプルファイルで試す
 uv run md2excel test_sample.md
 ```
 
-生成された `test_sample.xlsx` ファイルをExcelで開いてください。
+#### 3. Mermaid図サポートの追加設定（オプション）
 
-## Markdown形式の要件
+Mermaid図をExcelに埋め込む機能を使用する場合のみ必要です：
+
+```bash
+# システム依存関係のインストール（Linux/WSL）
+sudo apt-get install -y libnspr4 libnss3 libasound2t64
+
+# 日本語フォントのインストール（日本語を含むMermaid図の場合）
+sudo apt-get install -y fonts-noto-cjk fonts-noto-cjk-extra
+
+# Playwrightブラウザのインストール
+uv run python -m playwright install chromium
+
+# または、全ての依存関係を一括インストール
+sudo uv run python -m playwright install-deps
+```
+
+**注意:**
+- Mermaid機能を使用しない場合は、基本インストールのみで動作します
+- 依存関係が不足している場合、Mermaid図は警告メッセージに置き換えられます
+
+## 変換可能なMarkdown記述
 
 ### シート構造
 

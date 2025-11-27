@@ -36,12 +36,33 @@ All dependencies including Spire.XLS are managed by uv and defined in `pyproject
 
 ```bash
 # Run the tool on test file
-uv run md2excelxml test_sample.md
+uv run md2excel test_sample.md
 
 # Run with custom output path
-uv run md2excelxml test_sample.md -o output.xml
+uv run md2excel test_sample.md -o output.xlsx
 
-# The generated XML can be opened directly in Excel
+# The generated file can be opened directly in Excel
+```
+
+## Docker Usage
+
+A Dockerfile is provided for containerized execution with all dependencies pre-installed:
+
+```bash
+# Build the Docker image
+./docker-build.sh
+# or
+docker build -t md2excel:latest .
+
+# Run the tool
+docker run -v $(pwd):/data md2excel:latest input.md -o output.xlsx
+
+# The Docker image includes:
+# - Python 3.12
+# - All Python dependencies (spire-xls, mermaid-cli)
+# - Playwright with Chromium
+# - Japanese fonts (Noto CJK, IPA)
+# - All system dependencies
 ```
 
 ## Architecture
